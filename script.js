@@ -68,7 +68,6 @@ function saveName() {
   const name = nameInput.value.trim();
   if (name === "") return;
   userName = name;
-  // Removed localStorage saving
   nameModal.style.display = "none";
 
   messageInput.disabled = false;
@@ -86,10 +85,7 @@ function startNewPartner() {
   socket.emit("findPartner");
 }
 
-socket.on("onlineCount", (count) => {
-  updateOnlineCount(count);
-});
-
+socket.on("onlineCount", (count) => updateOnlineCount(count));
 socket.on("partnerFound", (partner) => {
   clearChat();
   addSystemMessage(`Now connected to ${partner.name || "Anonymous"}`);
@@ -97,7 +93,6 @@ socket.on("partnerFound", (partner) => {
   messageInput.disabled = false;
   sendBtn.disabled = false;
 });
-
 socket.on("waitingForPartner", () => {
   clearChat();
   addSystemMessage("Waiting for a partner to connect...");
@@ -105,18 +100,13 @@ socket.on("waitingForPartner", () => {
   messageInput.disabled = true;
   sendBtn.disabled = true;
 });
-
-socket.on("message", (msg) => {
-  addMessage(msg.text, false);
-});
-
+socket.on("message", (msg) => addMessage(msg.text, false));
 socket.on("partnerDisconnected", () => {
   addSystemMessage("Your partner disconnected.");
   partnerConnected = false;
   messageInput.disabled = true;
   sendBtn.disabled = true;
 });
-
 socket.on("clearedPartner", () => {
   clearChat();
   addSystemMessage("Partner cleared.");
@@ -124,31 +114,24 @@ socket.on("clearedPartner", () => {
   messageInput.disabled = true;
   sendBtn.disabled = true;
 });
-
-socket.on("readyForNewPartner", () => {
-  startNewPartner();
-});
+socket.on("readyForNewPartner", startNewPartner);
 
 sendBtn.addEventListener("click", sendMessage);
 messageInput.addEventListener("keypress", (e) => {
   if (e.key === "Enter") sendMessage();
 });
-
 nextBtn.addEventListener("click", () => {
   socket.emit("next");
   partnerConnected = false;
   messageInput.disabled = true;
   sendBtn.disabled = true;
 });
-
 changeNameBtn.addEventListener("click", () => {
   nameModal.style.display = "flex";
 });
-
 saveNameBtn.addEventListener("click", saveName);
 
 window.onload = () => {
-  // No username preloaded, always ask for name on load
   userName = "";
   nameModal.style.display = "flex";
   messageInput.disabled = true;

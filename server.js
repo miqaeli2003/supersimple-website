@@ -1,13 +1,14 @@
 const http = require('http');
 const express = require('express');
 const { Server } = require('socket.io');
+const path = require('path');
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8080;
 
-app.use(express.static(__dirname));
+app.use(express.static(path.join(__dirname, 'public')));
 
 let waitingUser = null;
 const pairs = new Map();
@@ -19,7 +20,7 @@ function emitOnlineCount() {
 io.on('connection', (socket) => {
   console.log('User connected:', socket.id);
   socket.userName = null;
-  socket.isReadyForPartner = false; // Track if user is ready
+  socket.isReadyForPartner = false;
 
   emitOnlineCount();
 
@@ -30,7 +31,6 @@ io.on('connection', (socket) => {
   });
 
   socket.on('findPartner', () => {
-    // Only proceed if user has a name and is ready
     if (!socket.userName || !socket.isReadyForPartner) {
       socket.emit('waitingForPartner');
       return;
@@ -42,7 +42,6 @@ io.on('connection', (socket) => {
     }
 
     if (waitingUser && waitingUser !== socket) {
-      // Pair users
       pairs.set(socket.id, waitingUser);
       pairs.set(waitingUser.id, socket);
 
@@ -75,7 +74,6 @@ io.on('connection', (socket) => {
       waitingUser = null;
     }
 
-    // Mark user as not ready after cleanup; must press Next or set name again
     socket.isReadyForPartner = false;
   }
 
